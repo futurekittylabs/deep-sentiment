@@ -2,7 +2,7 @@
   "lockfileVersion": 1,
   "workspaces": {
     "": {
-      "name": "cognition",
+      "name": "sveltekit-app",
       "devDependencies": {
         "@biomejs/biome": "2.3.4",
         "@sveltejs/adapter-auto": "^7.0.0",
