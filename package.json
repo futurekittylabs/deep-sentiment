@@ -31,5 +31,8 @@
     "typescript": "^5.9.3",
     "vite": "^7.1.10",
     "wrangler": "^4.46.0"
+  },
+  "dependencies": {
+    "viem": "^2.39.3"
   }
 }
