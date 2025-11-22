@@ -27,6 +27,7 @@ const walletClient = $state<WalletClient | null>(
 let connectedAddress = $state<Address | null>(null);
 let isConnected = $state(false);
 let connectionError = $state<string | null>(null);
+let ensName = $state<string | null>(null);
 
 // Actions
 export async function connectWallet() {
@@ -42,6 +43,9 @@ export async function connectWallet() {
     if (addresses.length > 0) {
       connectedAddress = addresses[0];
       isConnected = true;
+
+      // Fetch ENS name for the connected address
+      await fetchEnsName(addresses[0]);
     } else {
       connectionError = "No addresses available";
     }
@@ -52,10 +56,20 @@ export async function connectWallet() {
   }
 }
 
+async function fetchEnsName(address: Address) {
+  try {
+    ensName = await publicClient.getEnsName({ address });
+  } catch {
+    // If ENS lookup fails, just keep ensName as null
+    ensName = null;
+  }
+}
+
 export function disconnectWallet() {
   connectedAddress = null;
   isConnected = false;
   connectionError = null;
+  ensName = null;
 }
 
 export function isWalletAvailable() {
@@ -81,4 +95,8 @@ export function getIsConnected() {
 
 export function getConnectionError() {
   return connectionError;
+}
+
+export function getEnsName() {
+  return ensName;
 }

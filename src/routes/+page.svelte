@@ -8,6 +8,7 @@ import {
   connectWallet,
   disconnectWallet,
   isWalletAvailable,
+  getEnsName,
 } from "$lib/states/client.svelte.ts";
 import { onMount } from "svelte";
 
@@ -46,7 +47,9 @@ function handleDisconnect() {
             Web3 wallet.
         </p>
     {:else if getIsConnected()}
-        <p style="color: green;">Connected: {getConnectedAddress()}</p>
+        <p style="color: green;">
+            Connected: {getEnsName() ?? getConnectedAddress()}
+        </p>
         <Button onclick={handleDisconnect}>Disconnect Wallet</Button>
     {:else}
         <Button onclick={handleConnect}>Connect Wallet</Button>
