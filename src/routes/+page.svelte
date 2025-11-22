@@ -1,5 +1,5 @@
 <script lang="ts">
-import { Button } from "$lib/components/ui/button/index.js";
+    import { Button } from "$lib/components/ui/button/index.js";
 </script>
 
 <h1>Welcome to SvelteKit</h1>
@@ -8,4 +8,4 @@ import { Button } from "$lib/components/ui/button/index.js";
     documentation
 </p>
 
-<Button>Click me</Button>
+<Button>Click meee</Button>
