@@ -1,4 +1,4 @@
-# Deep Deciding
+# Deep Sentiment 
 > Collaborators: dionysuz.eth, Devansh Mehta
 
 ## Motivation
