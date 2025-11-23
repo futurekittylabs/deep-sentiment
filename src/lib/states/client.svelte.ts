@@ -6,8 +6,9 @@ import type { Address, PublicClient, WalletClient } from "viem";
 const isBrowser = typeof window !== "undefined";
 const ethereumProvider = isBrowser ? window.ethereum : undefined;
 
-// LocalStorage key
+// LocalStorage keys
 const STORAGE_KEY = "wallet_connected_address";
+const ENS_STORAGE_KEY = "wallet_ens_name";
 
 // Clients
 const publicClient = $state<PublicClient>(
@@ -66,10 +67,23 @@ export async function connectWallet() {
 
 async function fetchEnsName(address: Address) {
   try {
-    ensName = await publicClient.getEnsName({ address });
+    const name = await publicClient.getEnsName({ address });
+    ensName = name;
+
+    // Cache ENS name in localStorage
+    if (isBrowser) {
+      if (name) {
+        localStorage.setItem(ENS_STORAGE_KEY, name);
+      } else {
+        localStorage.removeItem(ENS_STORAGE_KEY);
+      }
+    }
   } catch {
     // If ENS lookup fails, just keep ensName as null
     ensName = null;
+    if (isBrowser) {
+      localStorage.removeItem(ENS_STORAGE_KEY);
+    }
   }
 }
 
@@ -82,6 +96,7 @@ export function disconnectWallet() {
   // Clear persisted connection
   if (isBrowser) {
     localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(ENS_STORAGE_KEY);
   }
 }
 
@@ -131,19 +146,31 @@ async function autoReconnect() {
       connectedAddress = currentAccount;
       isConnected = true;
 
+      // Load cached ENS name immediately to avoid flicker
+      const cachedEnsName = localStorage.getItem(ENS_STORAGE_KEY);
+      if (cachedEnsName && currentAccount === storedAddress) {
+        ensName = cachedEnsName;
+      }
+
       // Update storage if it changed
       if (currentAccount !== storedAddress) {
         localStorage.setItem(STORAGE_KEY, currentAccount);
+        // Clear cached ENS since address changed
+        localStorage.removeItem(ENS_STORAGE_KEY);
+        ensName = null;
       }
 
+      // Fetch fresh ENS name in background (will update cache)
       await fetchEnsName(currentAccount);
     } else {
       // No accounts available, clear storage
       localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(ENS_STORAGE_KEY);
     }
   } catch {
     // If unable to get addresses, clear storage
     localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(ENS_STORAGE_KEY);
   }
 }
 
