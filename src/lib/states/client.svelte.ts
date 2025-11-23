@@ -6,6 +6,9 @@ import type { Address, PublicClient, WalletClient } from "viem";
 const isBrowser = typeof window !== "undefined";
 const ethereumProvider = isBrowser ? window.ethereum : undefined;
 
+// LocalStorage key
+const STORAGE_KEY = "wallet_connected_address";
+
 // Clients
 const publicClient = $state<PublicClient>(
   createPublicClient({
@@ -44,6 +47,11 @@ export async function connectWallet() {
       connectedAddress = addresses[0];
       isConnected = true;
 
+      // Persist connection to localStorage
+      if (isBrowser) {
+        localStorage.setItem(STORAGE_KEY, addresses[0]);
+      }
+
       // Fetch ENS name for the connected address
       await fetchEnsName(addresses[0]);
     } else {
@@ -70,6 +78,11 @@ export function disconnectWallet() {
   isConnected = false;
   connectionError = null;
   ensName = null;
+
+  // Clear persisted connection
+  if (isBrowser) {
+    localStorage.removeItem(STORAGE_KEY);
+  }
 }
 
 export function isWalletAvailable() {
@@ -99,4 +112,55 @@ export function getConnectionError() {
 
 export function getEnsName() {
   return ensName;
+}
+
+// Auto-reconnect on page load
+async function autoReconnect() {
+  if (!isBrowser || !walletClient) return;
+
+  const storedAddress = localStorage.getItem(STORAGE_KEY);
+  if (!storedAddress) return;
+
+  try {
+    const accounts = await walletClient.getAddresses();
+
+    // Check if we have any accounts authorized
+    if (accounts.length > 0) {
+      // Use the currently selected account (first one)
+      const currentAccount = accounts[0];
+      connectedAddress = currentAccount;
+      isConnected = true;
+
+      // Update storage if it changed
+      if (currentAccount !== storedAddress) {
+        localStorage.setItem(STORAGE_KEY, currentAccount);
+      }
+
+      await fetchEnsName(currentAccount);
+    } else {
+      // No accounts available, clear storage
+      localStorage.removeItem(STORAGE_KEY);
+    }
+  } catch {
+    // If unable to get addresses, clear storage
+    localStorage.removeItem(STORAGE_KEY);
+  }
+}
+
+// Listen for account changes
+if (isBrowser && ethereumProvider) {
+  ethereumProvider.on?.("accountsChanged", (accounts: string[]) => {
+    if (accounts.length === 0) {
+      // User disconnected from wallet
+      disconnectWallet();
+    } else if (isConnected && accounts[0] !== connectedAddress) {
+      // Account switched
+      connectedAddress = accounts[0] as Address;
+      localStorage.setItem(STORAGE_KEY, accounts[0]);
+      fetchEnsName(accounts[0] as Address);
+    }
+  });
+
+  // Run auto-reconnect on module load
+  autoReconnect();
 }
