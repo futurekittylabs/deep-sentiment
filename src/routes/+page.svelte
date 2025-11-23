@@ -92,17 +92,12 @@ onMount(() => {
 
 <div class="space-y-8">
     <div class="flex items-center justify-between">
-        <div class="space-y-2">
-            <h2 class="text-2xl font-bold">Topics</h2>
-            <p class="text-muted-foreground">
-                Explore and discuss Ethereum ecosystem decisions
-            </p>
-        </div>
+        <h2 class="text-2xl font-bold">Topics</h2>
 
         <Dialog.Root bind:open={dialogOpen}>
-            <DialogTrigger disabled={!getIsConnected()}>
+            <Button onclick={() => dialogOpen = true} disabled={!getIsConnected()}>
                 Create Topic
-            </DialogTrigger>
+            </Button>
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>Create New Topic</DialogTitle>

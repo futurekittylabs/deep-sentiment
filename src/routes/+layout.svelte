@@ -29,7 +29,7 @@ function handleDisconnect() {
 <div class="min-h-screen flex flex-col">
     <header class="border-b">
         <div class="container mx-auto px-4 py-4 flex items-center justify-between">
-            <h1 class="text-xl font-semibold">Deep Sentiment</h1>
+            <a href="/" class="text-xl font-semibold hover:opacity-80 transition-opacity">Deep Sentiment</a>
 
             <div>
                 {#if isWalletAvailable() && getIsConnected()}
